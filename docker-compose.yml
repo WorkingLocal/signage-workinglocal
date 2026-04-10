@@ -9,7 +9,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=xibo
-      - CMS_SERVER_NAME=signage.workinglocal.be
+      - CMS_SERVER_NAME=${XIBO_SERVER_NAME}
       - CMS_USE_HTTPS=true
       - XMR_HOST=xibo-cms
     volumes:
