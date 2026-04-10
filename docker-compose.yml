@@ -1,0 +1,35 @@
+services:
+  xibo-cms:
+    image: xibosignage/xibo-cms:latest
+    restart: unless-stopped
+    ports:
+      - "9505:9505"
+    environment:
+      - MYSQL_HOST=xibo-db
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=xibo
+      - CMS_SERVER_NAME=signage.workinglocal.be
+      - CMS_USE_HTTPS=true
+      - XMR_HOST=xibo-cms
+    volumes:
+      - xibo-library:/var/www/cms/library
+      - xibo-backup:/var/www/backup
+    depends_on:
+      - xibo-db
+
+  xibo-db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=xibo
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - xibo-db:/var/lib/mysql
+
+volumes:
+  xibo-library:
+  xibo-backup:
+  xibo-db:

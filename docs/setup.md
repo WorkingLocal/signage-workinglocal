@@ -1,34 +1,51 @@
 # Xibo CMS — Working Local Setup
 
-## Installatie
+## Overzicht
 
-Xibo draait via de officiële Docker images van [xibosignage/xibo-docker](https://github.com/xibosignage/xibo-docker).
+Xibo CMS draait als Docker container op VPS-WORKINGLOCAL, beheerd via Coolify.
 
-### Stappen
+- **URL:** `signage.workinglocal.be`
+- **Database:** MariaDB 10.11
+- **XMR push-poort:** `9505` (direct, geen Cloudflare proxy)
 
-1. Clone de officiële xibo-docker repo op de VPS:
-   ```bash
-   cd /opt
-   git clone https://github.com/xibosignage/xibo-docker.git xibo
-   cd xibo
-   ```
+## Deployment via Coolify
 
-2. Kopieer de config template vanuit deze repo:
-   ```bash
-   cp /pad/naar/signage-workinglocal/config.env.template config.env
-   nano config.env  # vul wachtwoorden in
-   ```
+1. In Coolify: **New Resource → Docker Compose**
+2. Plak de inhoud van `docker-compose.yml` uit deze repo
+3. Stel het domein in: `signage.workinglocal.be`
+4. Voeg environment variabelen toe (zie `config.env.template`):
+   - `MYSQL_USER`
+   - `MYSQL_PASSWORD`
+   - `MYSQL_ROOT_PASSWORD`
+5. Deploy
 
-3. Start Xibo:
-   ```bash
-   docker compose up -d
-   ```
+> **Let op:** Gebruik `mariadb:10.11` — MySQL 8.0 is niet compatibel met de Xibo CMS client libraries.
 
-## Domein
+> **Let op:** Bind poort 8080 niet op de host — dit conflicteert met `coolify-proxy`. Coolify routeert intern via het Docker netwerk.
 
-- CMS: `signage.workinglocal.be`
-- XMR push-poort: `9505` (moet open staan in firewall, geen Cloudflare proxy)
+## Eerste login
 
-## Players
+Na installatie:
+- **Gebruiker:** `xibo_admin`
+- **Wachtwoord:** `password`
 
-Zie [players.md](players.md) voor een overzicht van de aangesloten schermen en players.
+Wijzig dit wachtwoord onmiddellijk na het eerste inloggen.
+
+## DNS (Cloudflare)
+
+```
+Type:  A
+Name:  signage
+Value: 23.94.220.181
+TTL:   Auto
+Proxy: DNS only (grijs wolkje) — vereist voor XMR poort 9505
+```
+
+## Xibo integratie met Odoo
+
+Xibo haalt live bezettingsdata op via Odoo's JSON endpoint:
+```
+GET https://odoo.workinglocal.be/api/workspaces/availability
+```
+
+Zie [odoo-workinglocal](https://github.com/WorkingLocal/odoo-workinglocal/blob/main/docs/xibo-integration.md) voor de volledige integratie setup.
