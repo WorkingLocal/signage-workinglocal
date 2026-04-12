@@ -1,0 +1,122 @@
+/*
+ * Working Local — Xibo CMS huisstijl override
+ * Marineblauw: #1A2E5A  |  Geel: #F5B800
+ */
+
+/* ── Navigatiebalk ─────────────────────────────────────────────────── */
+.navbar-default {
+    background-color: #F5B800 !important;
+    border-bottom: 3px solid #1A2E5A;
+}
+
+/* Logo — zwarte tekst leesbaar op gele achtergrond, geen filter nodig */
+.navbar-default .navbar-brand,
+.navbar-default .xibo-logo-container {
+    background-color: transparent;
+}
+
+/* Navigatielinks op gele balk */
+.navbar-default .navbar-nav > li > a {
+    color: #1A2E5A !important;
+    border-bottom: 1px solid transparent;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    color: #1A2E5A !important;
+    background-color: rgba(26, 46, 90, 0.1) !important;
+}
+
+/* Actief dropdown-item */
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:focus,
+.navbar-default .navbar-nav > .open > a:hover {
+    color: #1A2E5A !important;
+    background-color: rgba(26, 46, 90, 0.15) !important;
+    border-bottom: 1px solid #1A2E5A !important;
+}
+
+/* Dropdown menu */
+.navbar-default .dropdown-menu {
+    background-color: #fff;
+    border-top: 2px solid #F5B800;
+}
+.navbar-default .dropdown-menu > li > a {
+    color: #1A2E5A;
+}
+.navbar-default .dropdown-menu > li > a:hover {
+    background-color: #F5B800;
+    color: #1A2E5A;
+}
+
+/* Hamburger-knop (mobiel) */
+.navbar-toggler {
+    color: #1A2E5A !important;
+    border-color: #1A2E5A !important;
+}
+
+/* Iconen in de balk (notificaties, avatar) */
+.navbar-default .notification-drawer-icon i,
+.navbar-default i {
+    color: #1A2E5A !important;
+}
+
+/* ── Sidebar (verticaal menu op groter scherm) ─────────────────────── */
+.sidebar-nav,
+#sidebar-wrapper,
+.navbar-collapse-side {
+    background-color: #1A2E5A !important;
+}
+
+.sidebar-nav li a,
+.navbar-collapse-side .nav > li > a {
+    color: #b2cce8 !important;
+}
+
+.sidebar-nav li a:hover,
+.navbar-collapse-side .nav > li > a:hover {
+    color: #F5B800 !important;
+    background-color: rgba(245, 184, 0, 0.1) !important;
+}
+
+.sidebar-nav li.active > a,
+.navbar-collapse-side .nav > li.active > a {
+    color: #F5B800 !important;
+    border-left: 3px solid #F5B800;
+}
+
+/* ── Knoppen ────────────────────────────────────────────────────────── */
+.btn-primary {
+    background-color: #1A2E5A !important;
+    border-color: #1A2E5A !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #F5B800 !important;
+    border-color: #F5B800 !important;
+    color: #1A2E5A !important;
+}
+
+/* ── Actieve states en accenten ─────────────────────────────────────── */
+a {
+    color: #1A2E5A;
+}
+a:hover {
+    color: #c49300;
+}
+
+.bg-primary {
+    background-color: #1A2E5A !important;
+}
+
+/* Paginatitel balk */
+.page-header {
+    border-bottom-color: #F5B800;
+}
+
+/* Status-badge geel accent */
+.label-info,
+.badge-info {
+    background-color: #1A2E5A;
+}

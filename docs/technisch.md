@@ -150,10 +150,64 @@ Wijzig dit wachtwoord onmiddellijk na het eerste inloggen.
 
 Xibo CMS heeft een ingebouwde uploadlimiet van **2 GB** — geen extra configuratie nodig voor grote videobestanden.
 
-## UFW firewall
+## Firewall — poort 9505
 
-Poort 9505 moet expliciet open zijn naast de standaard webpoorten:
+UFW is niet geïnstalleerd op deze VPS. Poort 9505 is direct bereikbaar via de Docker host-binding in `docker-compose.yml` (`"9505:9505"`). Geen extra firewallconfiguratie nodig.
+
+Controleer of de poort open is:
+```bash
+ss -tlnp | grep 9505
+# Verwacht: 0.0.0.0:9505
+```
+
+## Deployment stap voor stap
+
+### Stap 1 — DNS instellen
+
+In Cloudflare voor `signage.workinglocal.be`:
+```
+Type: A | Naam: signage | Waarde: 23.94.220.181 | Proxy: UIT (grijs wolkje)
+```
+Cloudflare proxy MOET uit staan — anders is poort 9505 voor XMR niet bereikbaar.
+
+### Stap 2 — Coolify deployment
+
+1. Coolify openen
+2. New Resource → Service → Xibo CMS (of Docker Compose)
+3. Environment variables instellen:
+
+| Variabele | Waarde |
+|---|---|
+| `XIBO_SERVER_NAME` | `signage.workinglocal.be` |
+| `MYSQL_USER` | `xibo` |
+| `MYSQL_PASSWORD` | gegenereerd met `openssl rand -base64 32` |
+| `MYSQL_ROOT_PASSWORD` | gegenereerd met `openssl rand -base64 32` |
+
+4. Domein instellen: `https://signage.workinglocal.be`
+5. Deploy
+
+### Stap 3 — Container verbinden met coolify netwerk
+
+**Let op:** Coolify maakt voor services een geïsoleerd netwerk. Na deployment moet de CMS container ook aan het `coolify` netwerk worden gekoppeld zodat Traefik de requests kan doorsturen.
 
 ```bash
-ufw allow 9505/tcp comment "Xibo XMR push"
+ssh root@23.94.220.181
+
+# Container naam opzoeken
+docker ps | grep xibo-cms
+
+# Verbinden met coolify netwerk
+docker network connect coolify [XIBO_CMS_CONTAINER_NAAM]
 ```
+
+Verifieer:
+```bash
+curl -sk -o /dev/null -w '%{http_code}' https://signage.workinglocal.be/login
+# Verwacht: 200
+```
+
+### Stap 4 — Eerste login en wachtwoord wijzigen
+
+1. Ga naar `https://signage.workinglocal.be`
+2. Login: gebruiker `xibo_admin`, wachtwoord `password`
+3. Ga naar profielpagina en verander het wachtwoord onmiddellijk

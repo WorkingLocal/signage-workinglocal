@@ -15,6 +15,12 @@ services:
     volumes:
       - xibo-library:/var/www/cms/library
       - xibo-backup:/var/www/backup
+      # Working Local white-label theme (persistent over redeployments)
+      - ./theme/config.php:/var/www/cms/web/theme/default/config.php:ro
+      - ./theme/css/override.css:/var/www/cms/web/theme/default/css/override.css:ro
+      - ./theme/css/dashboard.css:/var/www/cms/web/theme/default/css/dashboard.css:ro
+      - ./theme/img/xibologo.png:/var/www/cms/web/theme/default/img/xibologo.png:ro
+      - ./theme/img/favicon.ico:/var/www/cms/web/theme/default/img/favicon.ico:ro
     depends_on:
       - xibo-db
 
