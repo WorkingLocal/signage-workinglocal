@@ -1,0 +1,26 @@
+services:
+  photoframe:
+    build: .
+    container_name: photoframe-workinglocal
+    restart: unless-stopped
+    environment:
+      - PHOTO_DIR=/app/photos
+      - CONFIG_FILE=/app/config.json
+      - PORT=8181
+    volumes:
+      - /data/photoframe/photos:/app/photos:ro
+      - /data/photoframe/config.json:/app/config.json:ro
+    networks:
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.photoframe-wl.rule=Host(`frame.workinglocal.be`)
+      - traefik.http.routers.photoframe-wl.entrypoints=https
+      - traefik.http.routers.photoframe-wl.tls=true
+      - traefik.http.routers.photoframe-wl.tls.certresolver=letsencrypt
+      - traefik.http.services.photoframe-wl.loadbalancer.server.port=8181
+      - traefik.docker.network=coolify
+
+networks:
+  coolify:
+    external: true

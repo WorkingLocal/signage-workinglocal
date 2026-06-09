@@ -1,0 +1,7 @@
+[ai-node-i9]
+type = sftp
+host = 100.126.121.11
+user = hostinglocal
+key_file = /root/.ssh/photoframe_rclone
+known_hosts_file = /root/.ssh/known_hosts
+shell_type = unix

@@ -1,0 +1,4 @@
+# /etc/cron.d/photoframe-sync
+# Dagelijkse synchronisatie van foto's van ai-node-i9 naar VPS
+# Tijd: 02:00 's nachts (weinig verkeer)
+0 2 * * * root /opt/photoframe-sync/rclone-sync.sh 2>&1
