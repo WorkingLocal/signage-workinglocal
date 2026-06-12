@@ -2,9 +2,10 @@
 
 ## Concept
 
-Xibo CMS draait als Docker container op de VPS en beheert alle digitale schermen (displays) in de Working Local ruimte. Via een XMR push-verbinding worden inhoudsupdates real-time naar de Xibo Players gestuurd. Bezettingsdata van werkplekken wordt opgehaald via de Odoo JSON API.
+Xibo CMS v4 draait als Docker stack op VPS-WORKINGLOCAL, beheerd via Coolify.
+Via een XMR push-verbinding worden inhoudsupdates real-time naar de Xibo Players gestuurd.
 
-## Architectuur
+## Architectuur v4
 
 ```
 Internet
@@ -16,75 +17,93 @@ Cloudflare DNS (proxy UIT — XMR vereist directe verbinding)
 Traefik → signage.workinglocal.be (poort 80/443)
     │
     ▼
-xibo-cms container (Xibo CMS)
+cms-web container (Xibo CMS v4.4.3)
     │   ├── /web              → Beheerinterface
     │   ├── /api              → REST API voor players
-    │   └── :9505             → XMR push (WebSocket, directe poort)
+    │   └── → cms-xmr:9505   → XMR push (intern)
     │
-    ▼
-xibo-db container (MariaDB 10.11)
-    │
-    └── database: xibo
+    ├── cms-db (MySQL 8.4)   → database: cms
+    ├── cms-xmr (v1.3)       → poort 9505 (host-binding voor players)
+    ├── cms-memcached         → session/page cache
+    └── cms-quickchart        → grafiek rendering
 
-Externe integratie:
-    Odoo API → https://odoo.workinglocal.be/api/workspaces/availability
+Photoframe:
+    frame.workinglocal.be → photoframe-workinglocal (:8181)
+    │   └── /data/photoframe/photos (406 foto's, rclone sync van ai-node-i9 02:00)
+
+Uptime Kuma:
+    uptime.workinglocal.be → uptime-kuma-wl (:3001)
+    │   └── 7 monitors: frame, signage, coolify, odoo, metrics, focus, wordpress
 ```
 
-## docker-compose.yml
+## Layouts
+
+| Layout | ID | Widget URL | Doel |
+|---|---|---|---|
+| Surface Hosting Local | 5 | http://127.0.0.1:8181/ | Surface Pro 4 woonkamer (lokale photoframe server) |
+| Tablets Hosting Local | 7 | https://frame.workinglocal.be/ | Android tablets (Xibo Player) |
+
+> ⚠️ Layouts zijn aangemaakt via directe SQL INSERT (niet via API) wegens complexiteit van Xibo v4 Draft-workflow voor regio's.
+
+## docker-compose.yml (v4 — 5 containers)
 
 ```yaml
 services:
-  xibo-cms:
-    image: xibosignage/xibo-cms:latest
-    restart: unless-stopped
-    ports:
-      - "9505:9505"          # XMR push — directe host poort vereist
+  cms-db:
+    image: mysql:8.4
     environment:
-      - MYSQL_HOST=xibo-db
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=xibo
-      - CMS_SERVER_NAME=${XIBO_SERVER_NAME}
-      - CMS_USE_HTTPS=true
-      - XMR_HOST=xibo-cms
-    volumes:
-      - xibo-library:/var/www/cms/library   # Media bestanden
-      - xibo-backup:/var/www/backup         # Database backups
-    depends_on:
-      - xibo-db
+      MYSQL_DATABASE: cms
+      MYSQL_USER: cms
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
 
-  xibo-db:
-    image: mariadb:10.11    # MySQL 8.0 is NIET compatibel met Xibo client libraries
-    restart: unless-stopped
+  cms-xmr:
+    image: ghcr.io/xibosignage/xibo-xmr:1.3
+    ports: ["9505:9505"]
+
+  cms-memcached:
+    image: memcached:alpine
+    command: memcached -m 64
+
+  cms-quickchart:
+    image: ianw/quickchart
+
+  cms-web:
+    image: ghcr.io/xibosignage/xibo-cms:release-4.4.3
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=xibo
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_HOST: cms-db
+      MYSQL_DATABASE: cms
+      MYSQL_USER: cms
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      XMR_HOST: cms-xmr
+      CMS_USE_MEMCACHED: "true"
+      MEMCACHED_HOST: cms-memcached
+      CMS_SERVER_NAME: ${CMS_SERVER_NAME}
     volumes:
-      - xibo-db:/var/lib/mysql
-
-volumes:
-  xibo-library:
-  xibo-backup:
-  xibo-db:
+      - xibo-library:/var/www/cms/library
+      - xibo-backup:/var/www/backup
+      - xibo-custom-theme:/var/www/cms/web/theme/custom
 ```
 
 ## Environment variables
 
 | Variabele | Beschrijving |
 |---|---|
-| `XIBO_SERVER_NAME` | Hostnaam van de CMS server (bv. `signage.workinglocal.be`) |
-| `MYSQL_USER` | MariaDB gebruikersnaam |
-| `MYSQL_PASSWORD` | MariaDB wachtwoord |
-| `MYSQL_ROOT_PASSWORD` | MariaDB root wachtwoord |
+| `CMS_SERVER_NAME` | Hostnaam van de CMS server (`signage.workinglocal.be`) |
+| `MYSQL_PASSWORD` | MySQL wachtwoord voor user `cms` |
+
+## Upgrade v3 → v4 (historisch — 2026-06-12)
+
+- v3 gebruikte MariaDB 10.11 + single xibo-cms container van Docker Hub
+- v4 gebruikt MySQL 8.4 + 5 containers van ghcr.io
+- v4 is NIET beschikbaar op Docker Hub — altijd ghcr.io/xibosignage/ gebruiken
+- Admin account aangemaakt via bcrypt SQL (password_hash PHP functie, csprng=2)
+- OAuth2 client aangemaakt via SQL INSERT in oauth_clients/oauth_client_scopes
 
 ## XMR Push Protocol
 
-Xibo gebruikt XMR (Xibo Message Relay) voor real-time push communicatie naar players:
-
-- Poort `9505` is open op de VPS host (via UFW)
-- Players verbinden rechtstreeks op `signage.workinglocal.be:9505`
+- Poort `9505` is open op de VPS host (docker port binding in cms-xmr)
+- Players verbinden op `signage.workinglocal.be:9505`
 - Cloudflare proxy moet **UIT** staan — Cloudflare blokkeert custom poorten
 - XMR gebruikt ZeroMQ protocol (geen HTTP)
 
@@ -95,119 +114,42 @@ Type:  A
 Name:  signage
 Value: 23.94.220.181
 Proxy: DNS only (grijs wolkje) — VERPLICHT voor XMR poort 9505
+
+Type:  A
+Name:  frame
+Value: 23.94.220.181
+Proxy: DNS only
+
+Type:  A
+Name:  uptime
+Value: 23.94.220.181
+Proxy: DNS only
 ```
 
 ## Volumes
 
 | Volume | Inhoud | Belang |
 |---|---|---|
-| `xibo-library` | Alle geüploade media (video, afbeeldingen, widgets) | Kritiek — backup vereist |
+| `xibo-library` | Alle geüploade media (video, afbeeldingen, widgets) | Kritiek |
 | `xibo-backup` | CMS database backups | Kritiek |
-| `xibo-db` | MariaDB database | Kritiek |
+| `xibo-db` | MySQL database | Kritiek |
+| `xibo-custom-theme` | Aangepaste thema bestanden | Laag |
 
-## Odoo integratie
+## Eerste login / wachtwoord reset
 
-Xibo haalt werkplekbezetting op via een Remote DataSet:
+Admin credentials: Vaultwarden → WorkingLocal → "Xibo CMS v4 - Admin"
 
-**API endpoint:**
-```
-GET https://odoo.workinglocal.be/api/workspaces/availability
-```
+Bij nood wachtwoord reset via bcrypt SQL (zie historische notes in git log).
 
-**DataSet configuratie in Xibo:**
-| Instelling | Waarde |
-|---|---|
-| Type | Remote DataSet |
-| URL | `https://odoo.workinglocal.be/api/workspaces/availability` |
-| Data path | `workspaces` |
-| Refresh interval | 60 seconden |
+## API Client (OAuth2)
 
-**Respons (JSON):**
-```json
-{
-  "workspaces": [
-    {
-      "id": 1,
-      "name": "Stille zone",
-      "type": "desk",
-      "available": true,
-      "capacity": 4,
-      "is_occupied": false
-    }
-  ]
-}
-```
+Client ID: `xiboapi-v4`
+Credentials: Vaultwarden → WorkingLocal → "Xibo CMS v4 - API Client"
+Scopes: `all`, `design`, `designDelete`, `displays`, `schedule`
+Grant type: `client_credentials`
 
-## Eerste login
-
-Na installatie zijn de standaard credentials:
-- **Gebruiker:** `xibo_admin`
-- **Wachtwoord:** `password`
-
-Wijzig dit wachtwoord onmiddellijk na het eerste inloggen.
-
-## Upload limiet
-
-Xibo CMS heeft een ingebouwde uploadlimiet van **2 GB** — geen extra configuratie nodig voor grote videobestanden.
-
-## Firewall — poort 9505
-
-UFW is niet geïnstalleerd op deze VPS. Poort 9505 is direct bereikbaar via de Docker host-binding in `docker-compose.yml` (`"9505:9505"`). Geen extra firewallconfiguratie nodig.
-
-Controleer of de poort open is:
+Token ophalen:
 ```bash
-ss -tlnp | grep 9505
-# Verwacht: 0.0.0.0:9505
+curl -X POST https://signage.workinglocal.be/api/authorize/access_token \
+  -d "grant_type=client_credentials&client_id=xiboapi-v4&client_secret=SECRET"
 ```
-
-## Deployment stap voor stap
-
-### Stap 1 — DNS instellen
-
-In Cloudflare voor `signage.workinglocal.be`:
-```
-Type: A | Naam: signage | Waarde: 23.94.220.181 | Proxy: UIT (grijs wolkje)
-```
-Cloudflare proxy MOET uit staan — anders is poort 9505 voor XMR niet bereikbaar.
-
-### Stap 2 — Coolify deployment
-
-1. Coolify openen
-2. New Resource → Service → Xibo CMS (of Docker Compose)
-3. Environment variables instellen:
-
-| Variabele | Waarde |
-|---|---|
-| `XIBO_SERVER_NAME` | `signage.workinglocal.be` |
-| `MYSQL_USER` | `xibo` |
-| `MYSQL_PASSWORD` | gegenereerd met `openssl rand -base64 32` |
-| `MYSQL_ROOT_PASSWORD` | gegenereerd met `openssl rand -base64 32` |
-
-4. Domein instellen: `https://signage.workinglocal.be`
-5. Deploy
-
-### Stap 3 — Container verbinden met coolify netwerk
-
-**Let op:** Coolify maakt voor services een geïsoleerd netwerk. Na deployment moet de CMS container ook aan het `coolify` netwerk worden gekoppeld zodat Traefik de requests kan doorsturen.
-
-```bash
-ssh root@23.94.220.181
-
-# Container naam opzoeken
-docker ps | grep xibo-cms
-
-# Verbinden met coolify netwerk
-docker network connect coolify [XIBO_CMS_CONTAINER_NAAM]
-```
-
-Verifieer:
-```bash
-curl -sk -o /dev/null -w '%{http_code}' https://signage.workinglocal.be/login
-# Verwacht: 200
-```
-
-### Stap 4 — Eerste login en wachtwoord wijzigen
-
-1. Ga naar `https://signage.workinglocal.be`
-2. Login: gebruiker `xibo_admin`, wachtwoord `password`
-3. Ga naar profielpagina en verander het wachtwoord onmiddellijk
