@@ -24,12 +24,12 @@ openssl rand -base64 32   # kopieer voor MYSQL_ROOT_PASSWORD
 
    | Variabele | Waarde |
    |---|---|
-   | `XIBO_SERVER_NAME` | `signage.workinglocal.be` |
+   | `XIBO_SERVER_NAME` | `signage.qompanio.be` |
    | `MYSQL_USER` | `xibo` |
    | `MYSQL_PASSWORD` | gegenereerd wachtwoord |
    | `MYSQL_ROOT_PASSWORD` | gegenereerd wachtwoord |
 
-5. Domein instellen: `https://signage.workinglocal.be`
+5. Domein instellen: `https://signage.qompanio.be`
 6. Klik **Deploy**
 
 ### Stap 3 — DNS instellen in Cloudflare
@@ -52,7 +52,7 @@ ufw status
 
 ## Hoe log ik voor het eerst in?
 
-1. Ga naar **https://signage.workinglocal.be**
+1. Ga naar **https://signage.qompanio.be**
 2. Log in met de standaard credentials:
    - **Gebruiker:** `xibo_admin`
    - **Wachtwoord:** `password`
@@ -65,7 +65,7 @@ ufw status
 1. Ga naar **Displays → Displays**
 2. Klik **Toevoegen**
 3. Op het scherm/apparaat: installeer de **Xibo Player** app
-4. Open de Player app en voer de CMS URL in: `https://signage.workinglocal.be`
+4. Open de Player app en voer de CMS URL in: `https://signage.qompanio.be`
 5. Noteer de weergegeven **Display Code**
 6. In de CMS: ga naar **Displays → Toevoegen** en voer de code in
 7. Het scherm verschijnt in de lijst — klik **Goedkeuren**

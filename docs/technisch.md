@@ -14,7 +14,7 @@ Internet
 Cloudflare DNS (proxy UIT — XMR vereist directe verbinding)
     │
     ▼
-Traefik → signage.workinglocal.be (poort 80/443)
+Traefik → signage.qompanio.be (poort 80/443)
     │
     ▼
 cms-web container (Xibo CMS v4.4.3)
@@ -89,7 +89,7 @@ services:
 
 | Variabele | Beschrijving |
 |---|---|
-| `CMS_SERVER_NAME` | Hostnaam van de CMS server (`signage.workinglocal.be`) |
+| `CMS_SERVER_NAME` | Hostnaam van de CMS server (`signage.qompanio.be`) |
 | `MYSQL_PASSWORD` | MySQL wachtwoord voor user `cms` |
 
 ## Upgrade v3 → v4 (historisch — 2026-06-12)
@@ -103,7 +103,7 @@ services:
 ## XMR Push Protocol
 
 - Poort `9505` is open op de VPS host (docker port binding in cms-xmr)
-- Players verbinden op `signage.workinglocal.be:9505`
+- Players verbinden op `signage.qompanio.be:9505`
 - Cloudflare proxy moet **UIT** staan — Cloudflare blokkeert custom poorten
 - XMR gebruikt ZeroMQ protocol (geen HTTP)
 
@@ -150,6 +150,6 @@ Grant type: `client_credentials`
 
 Token ophalen:
 ```bash
-curl -X POST https://signage.workinglocal.be/api/authorize/access_token \
+curl -X POST https://signage.qompanio.be/api/authorize/access_token \
   -d "grant_type=client_credentials&client_id=xiboapi-v4&client_secret=SECRET"
 ```

@@ -4,7 +4,7 @@
 
 Xibo CMS draait als Docker container op VPS-WORKINGLOCAL, beheerd via Coolify.
 
-- **URL:** `signage.workinglocal.be`
+- **URL:** `signage.qompanio.be`
 - **Database:** MariaDB 10.11
 - **XMR push-poort:** `9505` (direct, geen Cloudflare proxy)
 
@@ -12,7 +12,7 @@ Xibo CMS draait als Docker container op VPS-WORKINGLOCAL, beheerd via Coolify.
 
 1. In Coolify: **New Resource → Docker Compose**
 2. Plak de inhoud van `docker-compose.yml` uit deze repo
-3. Stel het domein in: `signage.workinglocal.be`
+3. Stel het domein in: `signage.qompanio.be`
 4. Voeg environment variabelen toe (zie `config.env.template`):
    - `MYSQL_USER`
    - `MYSQL_PASSWORD`

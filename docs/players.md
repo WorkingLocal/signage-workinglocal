@@ -40,7 +40,7 @@ bash -c "sleep 3 && echo xibo | sudo -S bash -c 'echo 7500 > /sys/class/backligh
 **Stappen:**
 1. Download Xibo Player for Android (gratis, via Xibo website)
 2. Installeer op tablet
-3. CMS URL: `https://signage.workinglocal.be`
+3. CMS URL: `https://signage.qompanio.be`
 4. Display registreren in CMS (accepteren via admin UI)
 5. Layout "Tablets Hosting Local" toewijzen (ID 7)
    - Widget type: webpage → `https://frame.workinglocal.be/`

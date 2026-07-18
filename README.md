@@ -6,7 +6,7 @@ Xibo CMS voor digitale schermen in de coworking ruimte.
 
 - **Digitale schermen** aansturen via Xibo CMS v4
 - **Fotoframe democase** via frame.workinglocal.be (photoframe container + rclone sync)
-- **Gecentraliseerd beheer** van alle displays via `signage.workinglocal.be`
+- **Gecentraliseerd beheer** van alle displays via `signage.qompanio.be`
 - **Uptime monitoring** via `uptime.workinglocal.be` (Uptime Kuma)
 
 ## Displays
@@ -20,24 +20,24 @@ Xibo CMS voor digitale schermen in de coworking ruimte.
 
 | Service | URL | Container |
 |---|---|---|
-| Xibo CMS v4 | signage.workinglocal.be | cms-web (ghcr.io/xibosignage/xibo-cms:release-4.4.3) |
+| Xibo CMS v4 | signage.qompanio.be | cms-web (ghcr.io/xibosignage/xibo-cms:release-4.4.3) |
 | Photoframe | frame.workinglocal.be | photoframe-workinglocal |
 | Uptime Kuma | uptime.workinglocal.be | uptime-kuma |
 
 ## Deployment
 
-Draait op `signage.workinglocal.be` via Coolify op VPS-WORKINGLOCAL.
+Draait op `signage.qompanio.be` via Coolify op VPS-WORKINGLOCAL.
 
 ### Xibo CMS v4
 
 Vereist:
 - Coolify op de VPS (zie [vps-workinglocal](https://github.com/WorkingLocal/vps-workinglocal))
-- DNS A-record: `signage.workinglocal.be` → `23.94.220.181` (Cloudflare proxy UIT — vereist voor XMR poort 9505)
+- DNS A-record: `signage.qompanio.be` → `23.94.220.181` (Cloudflare proxy UIT — vereist voor XMR poort 9505)
 
 Stappen:
 1. In Coolify: **New Resource → Docker Compose**
 2. Plak de inhoud van `docker-compose.yml`
-3. Domein instellen: `signage.workinglocal.be`
+3. Domein instellen: `signage.qompanio.be`
 4. Environment variabelen toevoegen vanuit `config.env.template`
 5. Deploy
 

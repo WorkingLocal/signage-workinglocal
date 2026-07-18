@@ -1,6 +1,6 @@
 # Xibo Windows Player — Installatie en configuratie
 
-Gedetailleerd stappenplan om een cleane Windows 11 Pro installatie in te richten als dedicated Xibo Player voor `signage.workinglocal.be`.
+Gedetailleerd stappenplan om een cleane Windows 11 Pro installatie in te richten als dedicated Xibo Player voor `signage.qompanio.be`.
 
 ---
 
@@ -67,7 +67,7 @@ Start → Instellingen → Privacy & beveiliging → Windows-beveiliging → App
    - Kies `x64` voor 64-bit Windows
 
 > **Let op:** Kies een versie die compatibel is met je CMS versie. Check de CMS versie via:
-> `https://signage.workinglocal.be` → Administration → About
+> `https://signage.qompanio.be` → Administration → About
 
 ---
 
@@ -86,16 +86,20 @@ Start → Instellingen → Privacy & beveiliging → Windows-beveiliging → App
 
 ## Stap 4 — Xibo Player configureren
 
-Bij de eerste start verschijnt het configuratiescherm (of via het systeemvak → rechtermuisknop → **Opties**).
+⚠️ **Er is GEEN systeemvakicoontje voor de player zelf** (enkel de losse Watchdog, met alleen "Restore"/"Exit"), en rechtsklikken op het spelervenster doet niets — dat was de oude v3-werkwijze en klopt niet meer voor v4 R407+. Open het configuratiescherm ("Player Options") in plaats daarvan met:
+
+```powershell
+Start-Process "C:\Program Files (x86)\Xibo Player\XiboClient.exe" -ArgumentList "o"
+```
+
+(Xibo Player is oorspronkelijk een screensaver-programma; `o` is het commandolijn-argument dat rechtstreeks het Options-scherm opent i.p.v. de fullscreen player.)
 
 ### 4.1 CMS verbinding instellen
 
 | Veld | Waarde |
 |---|---|
-| **CMS Address** | `https://signage.workinglocal.be` |
-| **CMS Key** | *(zie stap 5 — wordt aangemaakt in het CMS)* |
-
-Laat de CMS Key voorlopig leeg. Vul hem in na stap 5.
+| **CMS Address** | `https://signage.qompanio.be` |
+| **CMS Key** | **verplicht**, niet leeg laten — de "Server Key" uit Instellingen → Netwerk in het CMS (of `SELECT value FROM setting WHERE setting='SERVER_KEY';` in de CMS-database). Zonder correcte key: foutmelding "The Server key you entered does not match with the server key at this address". |
 
 ### 4.2 Display instellingen
 
@@ -109,7 +113,7 @@ Laat de CMS Key voorlopig leeg. Vul hem in na stap 5.
 
 | Veld | Waarde |
 |---|---|
-| **XMR Public Address** | `tcp://signage.workinglocal.be:9505` |
+| **XMR Public Address** | `tcp://signage.qompanio.be:9505` |
 
 > Dit veld is normaal automatisch ingesteld door het CMS na de eerste verbinding. Controleer of het correct is.
 
@@ -123,7 +127,7 @@ Klik **Save** → de player probeert verbinding te maken met het CMS.
 
 Wanneer de player voor het eerst verbinding maakt, verschijnt hij als **"Awaiting Authorisation"** in het CMS.
 
-1. Log in op `https://signage.workinglocal.be`
+1. Log in op `https://signage.qompanio.be`
 2. Ga naar **Displays** (linkermenu)
 3. Zoek het nieuwe display met status **"Awaiting Authorisation"**
 4. Klik op het tandwiel-icoon → **Authorize**
@@ -210,7 +214,7 @@ Displays → het display toont:
 | Probleem | Oorzaak | Oplossing |
 |---|---|---|
 | Player toont "Not Authorised" | Display nog niet geautoriseerd in CMS | Zie stap 5 |
-| Player kan CMS niet bereiken | Firewall of DNS-probleem | Controleer of `https://signage.workinglocal.be` bereikbaar is in de browser op dezelfde pc |
+| Player kan CMS niet bereiken | Firewall of DNS-probleem | Controleer of `https://signage.qompanio.be` bereikbaar is in de browser op dezelfde pc |
 | XMR niet verbonden | Poort 9505 geblokkeerd | Controleer bedrijfsfirewall/router voor TCP 9505 uitgaand |
 | Scherm gaat uit na verloop | Energiebeheer actief | Herhaal stap 1.3 |
 | Player start niet na herstart | Autostart niet ingesteld | Zie stap 6 |
